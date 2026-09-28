@@ -642,6 +642,13 @@ const V40_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQObE1-fB78f5Cvl8
 // v41: designed to be served from GitHub Pages (https), not opened as a local file.
 
 let V39_ITEMS=[]; let V39_STATE='正在讀取公告…';
+function v40DriveImage(url){
+ url=String(url||'').trim();
+ if(!url)return '';
+ let m=url.match(/drive\.google\.com\/file\/d\/([^\/]+)/i) || url.match(/[?&]id=([^&]+)/i);
+ if(m&&m[1]) return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(m[1])+'&sz=w1600';
+ return url;
+}
 function v40Parse(text){
  const rows=[];let row=[],cell='',q=false;
  for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(q&&text[i+1]==='"'){cell+='"';i++;}else q=!q;}else if(c===','&&!q){row.push(cell);cell='';}else if((c==='\n'||c==='\r')&&!q){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);cell='';if(row.some(v=>v.trim()!==''))rows.push(row);row=[];}else cell+=c;}
@@ -651,7 +658,7 @@ function v40Parse(text){
 }
 async function v39Load(){
  V39_STATE='正在讀取公告…';v39Home();
- try{const r=await fetch(V40_CSV+'&_='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);V39_ITEMS=v40Parse(await r.text()).filter(a=>a&&(a.title||a.content||a.image));V39_STATE='已讀取 '+V39_ITEMS.length+' 則公告';v39Home();}
+ try{const r=await fetch(V40_CSV+'&_='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);V39_ITEMS=v40Parse(await r.text()).filter(a=>a&&(a.title||a.content||a.image)).map(a=>({...a,image:v40DriveImage(a.image)}));V39_STATE='已讀取 '+V39_ITEMS.length+' 則公告';v39Home();}
  catch(e){V39_STATE='公告讀取失敗';v39Home();console.warn(e)}
 }
 function v39Home(){const box=document.querySelector('.announcement');if(!box)return;let st=box.querySelector('.v39Api');if(!st){st=document.createElement('div');st.className='v39Api';box.appendChild(st)}st.textContent=V39_STATE;if(!V39_ITEMS.length)return;const a=V39_ITEMS[0];const b=box.querySelector('.announcementText b');if(b)b.textContent=a.title||'公告';const sp=box.querySelector('.announcementText span');if(sp)sp.textContent=V39_ITEMS.length>1?'左右滑動查看 '+V39_ITEMS.length+' 則公告':'點擊查看完整公告';const im=box.querySelector(':scope > img');if(im&&a.image)im.src=a.image}
