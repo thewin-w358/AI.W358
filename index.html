@@ -639,14 +639,14 @@ document.addEventListener('DOMContentLoaded',function(){
 </style>
 <script id="v40-only-announcement-system">
 const V40_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQObE1-fB78f5Cvl83bnHg0WsHnrcGYCwhUmV1QpF0CO61Wb4aE5FYbNGFi33z00CSWHOxGFWAuRauA/pub?gid=0&single=true&output=csv';
-// v41: designed to be served from GitHub Pages (https), not opened as a local file.
+// v44: Google Drive public image support for GitHub Pages / iPhone Safari.
 
 let V39_ITEMS=[]; let V39_STATE='正在讀取公告…';
 function v40DriveImage(url){
  url=String(url||'').trim();
  if(!url)return '';
  let m=url.match(/drive\.google\.com\/file\/d\/([^\/]+)/i) || url.match(/[?&]id=([^&]+)/i);
- if(m&&m[1]) return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(m[1])+'&sz=w1600';
+ if(m&&m[1]) return 'https://lh3.googleusercontent.com/d/'+encodeURIComponent(m[1])+'=w1600';
  return url;
 }
 function v40Parse(text){
