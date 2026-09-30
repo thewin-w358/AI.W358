@@ -285,40 +285,40 @@ function pickStaticGame(el){
   document.getElementById('gameName').textContent=game;
 }
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0)}
-function loginAndStart(){
+const LOGIN_API='https://script.google.com/macros/s/AKfycbw6TJhe-HDz-xKH_0wbwRcJR4F9-q7B91JnL7cNrQ4wxnTZa15d3DrqOH3tQE0wac8hQg/exec';
+let loginBusy=false;
+async function loginAndStart(){
+  if(loginBusy) return false;
   const account=document.getElementById('loginAccount');
   const input=document.getElementById('loginPassword');
   const accountErr=document.getElementById('accountError');
   const passwordErr=document.getElementById('passwordError');
-
   const a=(account ? account.value : '').trim();
   const p=(input ? input.value : '').trim();
-
   if(accountErr) accountErr.style.display='none';
   if(passwordErr) passwordErr.style.display='none';
-
-  if(a===''){
-    if(accountErr){
-      accountErr.textContent='請輸入帳號';
-      accountErr.style.display='block';
-    }
-    if(account) account.focus();
-    return false;
+  if(!a){ if(accountErr){accountErr.textContent='請輸入帳號';accountErr.style.display='block';} if(account)account.focus(); return false; }
+  if(!p){ if(passwordErr){passwordErr.textContent='請輸入密碼';passwordErr.style.display='block';} if(input)input.focus(); return false; }
+  loginBusy=true;
+  const btn=document.querySelector('button[onclick="return loginAndStart()"]');
+  const oldText=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='登入驗證中…';}
+  try{
+    const url=LOGIN_API+'?action=login&username='+encodeURIComponent(a)+'&password='+encodeURIComponent(p)+'&_='+Date.now();
+    const r=await fetch(url,{cache:'no-store',redirect:'follow'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    if(data && data.success){ start(); return false; }
+    const msg=(data&&data.message)||'登入失敗';
+    if(msg.indexOf('帳號')!==-1){ if(accountErr){accountErr.textContent=msg;accountErr.style.display='block';} }
+    else { if(passwordErr){passwordErr.textContent=msg;passwordErr.style.display='block';} }
+  }catch(err){
+    if(passwordErr){passwordErr.textContent='無法連線登入系統，請稍後再試';passwordErr.style.display='block';}
+    console.warn('login error',err);
+  }finally{
+    loginBusy=false;
+    if(btn){btn.disabled=false;btn.textContent=oldText;}
   }
-
-  if(p!=='aaa888' && p!=='aaa123'){
-    if(passwordErr){
-      passwordErr.textContent='密碼錯誤';
-      passwordErr.style.display='block';
-    }
-    if(input){
-      input.value='';
-      input.focus();
-    }
-    return false;
-  }
-
-  start();
   return false;
 }
 function start(){analysisMode=document.getElementById('analysisMode').value;document.getElementById('anSub').textContent=provider+' ・ '+game+' ・ '+analysisMode;show('analysis');let b=document.getElementById('bar'),s=document.getElementById('status');b.style.width='0';
